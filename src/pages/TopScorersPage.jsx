@@ -22,7 +22,7 @@ export default function TopScorersPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 pt-32 pb-32">
+    <div className="max-w-4xl mx-auto px-4 pt-6 lg:pt-32 pb-8">
       <h1 className="section-title">Artilheiros</h1>
       
       <div className="glass-card overflow-hidden">

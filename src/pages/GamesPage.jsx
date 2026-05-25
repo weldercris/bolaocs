@@ -61,7 +61,7 @@ export default function GamesPage() {
   const pending = games.filter(g => !predictions[g.id] && new Date(g.match_date) > new Date()).length
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pt-32 pb-32">
+    <div className="max-w-5xl mx-auto px-4 pt-6 lg:pt-32 pb-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="section-title text-left !mb-2">Jogos</h1>

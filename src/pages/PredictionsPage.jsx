@@ -49,7 +49,7 @@ export default function PredictionsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pt-32 pb-32">
+    <div className="max-w-5xl mx-auto px-4 pt-6 lg:pt-32 pb-8">
       <div className="mb-8">
         <h1 className="section-title text-left !mb-2">Meus Palpites</h1>
         <p className="text-gray-500 font-medium">Gerencie seus palpites e acompanhe sua pontuação</p>

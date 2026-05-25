@@ -10,8 +10,6 @@ import RankingPage from './pages/RankingPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminPage from './pages/AdminPage'
 import BracketPage from './pages/BracketPage'
-import PlayersPage from './pages/PlayersPage'
-import TopScorersPage from './pages/TopScorersPage'
 import LoadingScreen from './components/ui/LoadingScreen'
 
 function PrivateRoute({ children }) {
@@ -45,8 +43,6 @@ export default function App() {
             <Route path="palpites" element={<PredictionsPage />} />
             <Route path="chaveamento" element={<BracketPage />} />
             <Route path="ranking" element={<RankingPage />} />
-            <Route path="jogadores" element={<PlayersPage />} />
-            <Route path="artilheiros" element={<TopScorersPage />} />
             <Route path="perfil" element={<ProfilePage />} />
             <Route path="admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
           </Route>

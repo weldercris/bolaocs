@@ -13,30 +13,23 @@ export default function AdminPage() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingResult, setEditingResult] = useState(null)
-  const [resultForm, setResultForm] = useState({ home_score: '', away_score: '', penalty_home_score: '', penalty_away_score: '', scorers: [] })
-  const [gamePlayers, setGamePlayers] = useState([])
+  const [resultForm, setResultForm] = useState({ home_score: '', away_score: '', penalty_home_score: '', penalty_away_score: '' })
   const [newGame, setNewGame] = useState({ home_team: '', away_team: '', home_flag: '', away_flag: '', match_date: '', stadium: '', round: 'Fase de Grupos', group_name: '' })
   const [showNewGame, setShowNewGame] = useState(false)
   const [savingResult, setSavingResult] = useState(false)
   const [savingGame, setSavingGame] = useState(false)
-  const [savingPlayer, setSavingPlayer] = useState(false)
   const [feedback, setFeedback] = useState('')
-  const [allPlayers, setAllPlayers] = useState([])
-  const [newPlayer, setNewPlayer] = useState({ name: '', team: '', number: '', position: 'Atacante' })
-  const [showNewPlayer, setShowNewPlayer] = useState(false)
 
   useEffect(() => { fetchAll() }, [])
 
   async function fetchAll() {
     setLoading(true)
-    const [gamesRes, usersRes, playersRes] = await Promise.all([
+    const [gamesRes, usersRes] = await Promise.all([
       supabase.from('games').select('*').order('match_date'),
       supabase.from('profiles').select('*').order('created_at'),
-      supabase.from('players').select('*').order('team').order('name'),
     ])
     setGames(gamesRes.data || [])
     setUsers(usersRes.data || [])
-    setAllPlayers(playersRes.data || [])
     setLoading(false)
   }
 
@@ -47,8 +40,7 @@ export default function AdminPage() {
       away_score: parseInt(resultForm.away_score), 
       status: 'finished',
       penalty_home_score: resultForm.penalty_home_score !== '' ? parseInt(resultForm.penalty_home_score) : null,
-      penalty_away_score: resultForm.penalty_away_score !== '' ? parseInt(resultForm.penalty_away_score) : null,
-      scorers: resultForm.scorers
+      penalty_away_score: resultForm.penalty_away_score !== '' ? parseInt(resultForm.penalty_away_score) : null
     }
     const { error } = await supabase.from('games')
       .update(payload)
@@ -56,7 +48,6 @@ export default function AdminPage() {
     setSavingResult(false)
     if (!error) {
       setEditingResult(null)
-      setGamePlayers([])
       setFeedback('Resultado salvo e pontos atualizados!')
       setTimeout(() => setFeedback(''), 3000)
       fetchAll()
@@ -69,11 +60,8 @@ export default function AdminPage() {
       home_score: game.home_score ?? '', 
       away_score: game.away_score ?? '',
       penalty_home_score: game.penalty_home_score ?? '',
-      penalty_away_score: game.penalty_away_score ?? '',
-      scorers: game.scorers ?? []
+      penalty_away_score: game.penalty_away_score ?? ''
     })
-    const { data } = await supabase.from('players').select('*').in('team', [game.home_team, game.away_team])
-    setGamePlayers(data || [])
   }
 
   async function addGame() {
@@ -110,34 +98,8 @@ export default function AdminPage() {
     fetchAll()
   }
 
-  async function addPlayer() {
-    setSavingPlayer(true)
-    const { error } = await supabase.from('players').insert({
-      name: newPlayer.name,
-      team: newPlayer.team,
-      number: newPlayer.number ? parseInt(newPlayer.number) : null,
-      position: newPlayer.position
-    })
-    setSavingPlayer(false)
-    if (!error) {
-      setShowNewPlayer(false)
-      setNewPlayer({ name: '', team: '', number: '', position: 'Atacante' })
-      setFeedback('Atleta adicionado com sucesso!')
-      setTimeout(() => setFeedback(''), 3000)
-      fetchAll()
-    } else {
-      alert('Erro ao adicionar atleta: ' + error.message)
-    }
-  }
-
-  async function deletePlayer(id) {
-    if (!confirm('Excluir este atleta?')) return
-    await supabase.from('players').delete().eq('id', id)
-    fetchAll()
-  }
-
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-32 pb-32">
+    <div className="max-w-6xl mx-auto px-4 pt-6 lg:pt-32 pb-8">
       <div className="flex items-center gap-3 mb-8">
         <Shield className="text-ruby" size={28} />
         <h1 className="section-title !mb-0 text-left">Painel Admin</h1>
@@ -154,8 +116,7 @@ export default function AdminPage() {
         {[
           { key: 'games', label: '⚽ Jogos', count: games.length },
           { key: 'results', label: '🎯 Resultados' },
-          { key: 'users', label: '👥 Usuários', count: users.length },
-          { key: 'players', label: '👕 Atletas', count: allPlayers.length },
+          { key: 'users', label: '👥 Usuários', count: users.length }
         ].map(t => (
           <button
             key={t.key}
@@ -324,30 +285,6 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
-                    {gamePlayers.length > 0 && (
-                      <div className="mt-2 pt-2 border-t border-gray-100">
-                        <p className="text-xs font-bold text-gray-500 uppercase mb-2">Artilheiros:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {gamePlayers.map(p => {
-                            const isSelected = resultForm.scorers.includes(p.id)
-                            return (
-                              <label key={p.id} className={`text-xs px-2 py-1 border rounded cursor-pointer ${isSelected ? 'bg-ruby text-white border-ruby' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                                <input 
-                                  type="checkbox" 
-                                  className="hidden" 
-                                  checked={isSelected} 
-                                  onChange={() => {
-                                    if (isSelected) setResultForm({...resultForm, scorers: resultForm.scorers.filter(id => id !== p.id)})
-                                    else setResultForm({...resultForm, scorers: [...resultForm.scorers, p.id]})
-                                  }} 
-                                />
-                                {p.name}
-                              </label>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-4">
@@ -382,7 +319,11 @@ export default function AdminPage() {
         <div className="space-y-4">
           {users.map(u => (
             <div key={u.id} className="glass-card p-5 flex items-center gap-5 hover:shadow-md transition-shadow">
-              <span className="text-4xl bg-white rounded-full p-2 border border-gray-100 shadow-sm">{u.avatar_emoji}</span>
+              {u.avatar_url ? (
+                <img src={u.avatar_url} alt="Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+              ) : (
+                <span className="text-4xl bg-white rounded-full p-2 border border-gray-100 shadow-sm">⚽</span>
+              )}
               <div className="flex-1">
                 <div className="font-bold text-ocean text-lg">{u.username}</div>
                 <div className="text-xs text-gray-500 font-medium">{u.full_name}</div>
@@ -400,72 +341,6 @@ export default function AdminPage() {
               </button>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* PLAYERS TAB */}
-      {!loading && tab === 'players' && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <button onClick={() => setShowNewPlayer(!showNewPlayer)} className="btn-primary">
-              <Plus size={16} />
-              Novo Atleta
-            </button>
-          </div>
-
-          {showNewPlayer && (
-            <div className="glass-card p-8 border-ruby/30 mt-6">
-              <h3 className="font-display text-xl text-ruby mb-6">Adicionar Atleta</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Nome do Atleta</label>
-                  <input value={newPlayer.name} onChange={e => setNewPlayer({...newPlayer, name: e.target.value})} className="input-field" placeholder="Ex: Vini Jr." />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Seleção (Time)</label>
-                  <input value={newPlayer.team} onChange={e => setNewPlayer({...newPlayer, team: e.target.value})} className="input-field" placeholder="Ex: Brasil" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Número da Camisa (opcional)</label>
-                  <input type="number" value={newPlayer.number} onChange={e => setNewPlayer({...newPlayer, number: e.target.value})} className="input-field" placeholder="Ex: 10" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Posição</label>
-                  <select value={newPlayer.position} onChange={e => setNewPlayer({...newPlayer, position: e.target.value})} className="input-field">
-                    <option value="Goleiro">Goleiro</option>
-                    <option value="Defensor">Defensor</option>
-                    <option value="Meio-campo">Meio-campo</option>
-                    <option value="Atacante">Atacante</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex gap-3 mt-4">
-                <button onClick={addPlayer} disabled={savingPlayer || !newPlayer.name || !newPlayer.team} className="btn-primary">
-                  <Check size={16} /> {savingPlayer ? 'Salvando...' : 'Adicionar'}
-                </button>
-                <button onClick={() => setShowNewPlayer(false)} className="btn-ghost">Cancelar</button>
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-            {allPlayers.map(p => (
-              <div key={p.id} className="glass-card p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-ocean/10 rounded-full flex items-center justify-center font-bold text-ocean text-lg border border-ocean/20">
-                  {p.number || '?'}
-                </div>
-                <div className="flex-1">
-                  <div className="font-bold text-ocean">{p.name}</div>
-                  <div className="text-xs text-gray-500 flex items-center gap-2 mt-1">
-                    <Flag team={p.team} className="w-[16px] h-[12px] inline-block" /> {p.team} • {p.position}
-                  </div>
-                </div>
-                <button onClick={() => deletePlayer(p.id)} className="p-2 rounded-lg text-gray-400 hover:text-ruby hover:bg-ruby/10 transition-colors" title="Excluir Atleta">
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
       )}
     </div>

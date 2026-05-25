@@ -56,7 +56,7 @@ export default function BracketPage() {
   if (loading) return <div className="text-center py-20 text-ocean font-bold text-xl animate-pulse">Carregando chaveamento...</div>
 
   return (
-    <div className="max-w-[1500px] mx-auto px-4 pt-32 overflow-x-auto pb-32 relative">
+    <div className="max-w-[1500px] mx-auto px-4 pt-6 lg:pt-32 overflow-x-auto pb-8 relative">
       <div className="fixed inset-0 pointer-events-none z-[-1]">
         <img src="/brasil.jpg" alt="Brasil Background" className="w-full h-full object-cover opacity-5 saturate-0 mix-blend-multiply" />
       </div>

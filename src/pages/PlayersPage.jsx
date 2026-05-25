@@ -50,7 +50,7 @@ export default function PlayersPage() {
   const filteredPlayers = filterTeam ? players.filter(p => p.team === filterTeam) : players
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-32 pb-32">
+    <div className="max-w-6xl mx-auto px-4 pt-6 lg:pt-32 pb-8">
       <h1 className="section-title">Jogadores por Seleção</h1>
       
       <div className="mb-8 flex flex-wrap gap-2">

@@ -32,7 +32,7 @@
   }
 
   .card-hover {
-    @apply card transition-all duration-300 hover:brightness-95;
+    @apply card transition-all duration-300 hover:brightness-95 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)];
   }
 
   .glass-card {
@@ -44,7 +44,7 @@
   }
 
   .btn-gold {
-    @apply bg-gold hover:brightness-110 text-white font-semibold px-6 py-3 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 shadow-md;
+    @apply bg-gold hover:brightness-110 text-ocean font-semibold px-6 py-3 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 shadow-md;
   }
 
   .btn-ruby {
@@ -70,11 +70,21 @@
   .score-input {
     @apply w-14 h-14 text-2xl font-display text-center bg-white border-2 border-ocean/10 focus:border-ocean text-ocean rounded-xl outline-none transition-all duration-200 shadow-sm;
   }
+
+  /* Gradiente verde-amarelo do Brasil */
+  .brazil-gradient {
+    background: linear-gradient(135deg, #009c3b 0%, #ffdf00 100%);
+  }
+
+  /* Sombra premium */
+  .shadow-premium {
+    box-shadow: 0 20px 60px rgba(10, 29, 66, 0.12), 0 4px 16px rgba(10, 29, 66, 0.06);
+  }
 }
 
-/* Animações de entrada */
+/* ── Animações de entrada ── */
 .animate-in {
-  animation: slideUp 0.4s ease-out both;
+  animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-in:nth-child(1) { animation-delay: 0ms; }
@@ -85,6 +95,48 @@
 .animate-in:nth-child(6) { animation-delay: 300ms; }
 
 @keyframes slideUp {
-  from { transform: translateY(16px); opacity: 0; }
+  from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+/* ── Fade-in simples ── */
+.animate-fade {
+  animation: fadeIn 0.4s ease-out both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Shimmer (loading skeleton) ── */
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ── Pulso dourado ── */
+.pulse-gold {
+  animation: pulseGold 2s ease-in-out infinite;
+}
+
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 223, 0, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(255, 223, 0, 0); }
+}
+
+/* ── Flutuação ── */
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
 }

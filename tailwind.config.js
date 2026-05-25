@@ -32,6 +32,9 @@ export default {
         'fade-in': 'fadeIn 0.3s ease-out',
         'pulse-gold': 'pulseGold 2s infinite',
         'bounce-slow': 'bounce 2s infinite',
+        'loading-bar': 'loadingBar 1.5s ease-in-out infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'shimmer': 'shimmer 1.5s infinite',
       },
       keyframes: {
         slideUp: {
@@ -45,6 +48,19 @@ export default {
         pulseGold: {
           '0%, 100%': { boxShadow: '0 0 0 0 rgba(201,168,76,0.4)' },
           '50%': { boxShadow: '0 0 0 8px rgba(201,168,76,0)' },
+        },
+        loadingBar: {
+          '0%': { transform: 'translateX(-100%)' },
+          '50%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
         },
       },
     },

@@ -1,57 +1,77 @@
 import { useState, useEffect } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Zap } from 'lucide-react';
 
 export function Countdown({ targetDate }) {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
   function calculateTimeLeft() {
     const difference = +new Date(targetDate) - +new Date();
-    let timeLeft = {};
-
     if (difference > 0) {
-      timeLeft = {
+      return {
         dias: Math.floor(difference / (1000 * 60 * 60 * 24)),
         horas: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutos: Math.floor((difference / 1000 / 60) % 60),
-        segundos: Math.floor((difference / 1000) % 60)
+        min: Math.floor((difference / 1000 / 60) % 60),
+        seg: Math.floor((difference / 1000) % 60),
       };
-    } else {
-      timeLeft = { dias: 0, horas: 0, minutos: 0, segundos: 0 };
     }
-    return timeLeft;
+    return { dias: 0, horas: 0, min: 0, seg: 0 };
   }
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
+    const timer = setTimeout(() => setTimeLeft(calculateTimeLeft()), 1000);
     return () => clearTimeout(timer);
   });
 
-  return (
-    <div className="bg-white/80 backdrop-blur-md border border-white/40 shadow-xl rounded-3xl p-6 mb-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-      <div className="absolute top-0 left-0 w-32 h-32 bg-gold/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-32 h-32 bg-ocean/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
-      
-      <div className="flex items-center gap-4 relative z-10">
-        <div className="w-12 h-12 rounded-full bg-ocean text-white flex items-center justify-center shadow-md">
-          <Calendar size={24} />
-        </div>
-        <div>
-          <h3 className="text-xl font-black text-ocean font-display leading-tight">Copa do Mundo 2026</h3>
-          <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">América do Norte</p>
-        </div>
-      </div>
+  const isLive = timeLeft.dias === 0 && timeLeft.horas === 0 && timeLeft.min === 0 && timeLeft.seg === 0;
 
-      <div className="flex gap-3 relative z-10">
-        {Object.entries(timeLeft).map(([unit, value], idx) => (
-          <div key={idx} className="flex flex-col items-center min-w-[70px]">
-            <div className="bg-white border border-gray-100 shadow-sm rounded-2xl w-16 h-16 flex items-center justify-center mb-1">
-              <span className="text-2xl font-black text-ruby font-display">{String(value).padStart(2, '0')}</span>
-            </div>
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{unit}</span>
+  return (
+    <div className="relative overflow-hidden rounded-3xl mb-10">
+      {/* Fundo: imagem de estádio */}
+      <img
+        src="/stadium.jpg"
+        alt="Estádio Copa 2026"
+        className="absolute inset-0 w-full h-full object-cover object-center"
+      />
+      {/* Overlay azul escuro */}
+      <div className="absolute inset-0 bg-gradient-to-r from-ocean/95 via-ocean/85 to-ocean/60" />
+
+      {/* Conteúdo */}
+      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 px-8 py-7">
+        {/* Info */}
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
+            <img src="/trophy.png" alt="Troféu" className="w-9 h-9 object-contain float" />
           </div>
-        ))}
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              {isLive ? (
+                <span className="flex items-center gap-1.5 bg-[#009c3b] text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
+                  <Zap size={10} className="fill-current" /> AO VIVO
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 bg-white/10 text-white/70 text-xs font-bold px-2.5 py-0.5 rounded-full border border-white/20">
+                  <Calendar size={10} /> 11 JUN 2026
+                </span>
+              )}
+            </div>
+            <h3 className="text-white font-display text-2xl tracking-wider leading-none">COPA DO MUNDO</h3>
+            <p className="text-white/50 text-xs font-medium uppercase tracking-widest mt-0.5">EUA · Canadá · México</p>
+          </div>
+        </div>
+
+        {/* Contador */}
+        <div className="flex gap-3">
+          {Object.entries(timeLeft).map(([unit, value], idx) => (
+            <div key={idx} className="flex flex-col items-center">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl w-[68px] h-[68px] flex items-center justify-center shadow-lg">
+                <span className="text-3xl font-black text-white font-display tabular-nums">
+                  {String(value).padStart(2, '0')}
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1.5">{unit}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
