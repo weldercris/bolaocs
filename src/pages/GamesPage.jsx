@@ -11,6 +11,7 @@ export default function GamesPage() {
   const { user } = useAuth()
   const [games, setGames] = useState([])
   const [predictions, setPredictions] = useState({})
+  const [favorites, setFavorites] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedRound, setSelectedRound] = useState('Todos')
   const [modalGame, setModalGame] = useState(null)
@@ -21,15 +22,28 @@ export default function GamesPage() {
 
   async function fetchData() {
     setLoading(true)
-    const [gamesRes, predsRes] = await Promise.all([
+    const [gamesRes, predsRes, favsRes] = await Promise.all([
       supabase.from('games').select('*').order('match_date'),
       supabase.from('predictions').select('*').eq('user_id', user.id),
+      supabase.from('favorites').select('item_id').eq('user_id', user.id).eq('item_type', 'game')
     ])
     setGames(gamesRes.data || [])
     const predsMap = {}
     for (const p of (predsRes.data || [])) predsMap[p.game_id] = p
     setPredictions(predsMap)
+    setFavorites(favsRes.data?.map(f => f.item_id) || [])
     setLoading(false)
+  }
+
+  async function toggleFavorite(gameId) {
+    const isFav = favorites.includes(gameId)
+    if (isFav) {
+      await supabase.from('favorites').delete().eq('user_id', user.id).eq('item_type', 'game').eq('item_id', gameId)
+      setFavorites(favorites.filter(id => id !== gameId))
+    } else {
+      await supabase.from('favorites').insert({ user_id: user.id, item_type: 'game', item_id: gameId })
+      setFavorites([...favorites, gameId])
+    }
   }
 
   const filtered = selectedRound === 'Todos'
@@ -108,6 +122,8 @@ export default function GamesPage() {
                   game={game}
                   prediction={predictions[game.id]}
                   onPredict={setModalGame}
+                  isFavorite={favorites.includes(game.id)}
+                  onToggleFavorite={() => toggleFavorite(game.id)}
                 />
               ))}
             </div>

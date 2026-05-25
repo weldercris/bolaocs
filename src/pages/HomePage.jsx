@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase'
 import { Trophy, Target, Calendar, ChevronRight } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { Countdown } from '../components/ui/Countdown'
+import Flag from '../components/ui/Flag'
 
 export default function HomePage() {
   const { profile } = useAuth()
@@ -38,6 +40,9 @@ export default function HomePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-32 pb-32 space-y-8">
+      {/* Countdown Cup 2026 */}
+      <Countdown targetDate="2026-06-11T00:00:00Z" />
+
       {/* Hero Banner Premium Light */}
       <div className="relative overflow-hidden rounded-[2.5rem] bg-white h-[28rem] md:h-[32rem] flex items-center shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 mb-12">
         <div className="absolute top-[-20%] left-[-10%] w-[30rem] h-[30rem] bg-gold/10 rounded-full blur-[80px] pointer-events-none" />
@@ -118,11 +123,11 @@ export default function HomePage() {
             {nextGames.map(game => (
               <div key={game.id} className="card-hover p-5 flex items-center gap-4 animate-in">
                 <div className="flex items-center gap-4 flex-1">
-                  <span className="text-4xl drop-shadow-md">{game.home_flag}</span>
+                  <Flag team={game.home_team} fallback={game.home_flag} className="w-[48px] h-[32px] text-4xl drop-shadow-md" />
                   <div className="text-sm text-gray-400 text-center font-display flex-1">
                     <span className="bg-background-gray px-3 py-1 rounded-full text-xs font-bold border border-gray-200">VS</span>
                   </div>
-                  <span className="text-4xl drop-shadow-md">{game.away_flag}</span>
+                  <Flag team={game.away_team} fallback={game.away_flag} className="w-[48px] h-[32px] text-4xl drop-shadow-md" />
                   <div className="ml-4 flex-1 text-right">
                     <div className="text-base font-bold text-ocean">{game.home_team} × {game.away_team}</div>
                     <div className="text-xs text-gray-500 flex items-center justify-end gap-1 font-medium mt-1">

@@ -4,13 +4,31 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useEffect } from 'react'
+import Flag from './Flag'
 
 export default function PredictionModal({ game, existing, onClose, onSaved }) {
   const { user } = useAuth()
   const [homeScore, setHomeScore] = useState(existing?.home_score ?? '')
   const [awayScore, setAwayScore] = useState(existing?.away_score ?? '')
+  const [predictedScorers, setPredictedScorers] = useState(existing?.predicted_scorers ?? [])
+  const [players, setPlayers] = useState({ home: [], away: [] })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    async function fetchPlayers() {
+      const { data } = await supabase
+        .from('players')
+        .select('*')
+        .in('team', [game.home_team, game.away_team])
+      
+      const homeP = data?.filter(p => p.team === game.home_team) || []
+      const awayP = data?.filter(p => p.team === game.away_team) || []
+      setPlayers({ home: homeP, away: awayP })
+    }
+    fetchPlayers()
+  }, [game.home_team, game.away_team])
 
   async function handleSave() {
     if (homeScore === '' || awayScore === '') {
@@ -33,11 +51,12 @@ export default function PredictionModal({ game, existing, onClose, onSaved }) {
       game_id: game.id,
       home_score: parseInt(homeScore),
       away_score: parseInt(awayScore),
+      predicted_scorers: predictedScorers,
       history: newHistory
     }
 
     const { error: err } = existing
-      ? await supabase.from('predictions').update({ home_score: payload.home_score, away_score: payload.away_score, history: payload.history }).eq('id', existing.id)
+      ? await supabase.from('predictions').update({ home_score: payload.home_score, away_score: payload.away_score, predicted_scorers: payload.predicted_scorers, history: payload.history }).eq('id', existing.id)
       : await supabase.from('predictions').insert(payload)
 
     setLoading(false)
@@ -76,13 +95,13 @@ export default function PredictionModal({ game, existing, onClose, onSaved }) {
 
         {/* Teams */}
         <div className="flex items-center justify-center gap-4 mb-8">
-          <div className="text-center flex-1">
-            <div className="text-4xl mb-2 drop-shadow-sm">{game.home_flag}</div>
+          <div className="text-center flex-1 flex flex-col items-center">
+            <Flag team={game.home_team} fallback={game.home_flag} className="w-[48px] h-[32px] text-4xl mb-2 drop-shadow-sm" />
             <div className="text-xs text-ocean font-bold">{game.home_team}</div>
           </div>
           <div className="text-gray-400 font-display text-xl bg-gray-50 px-3 py-1 rounded-full border border-gray-100">VS</div>
-          <div className="text-center flex-1">
-            <div className="text-4xl mb-2 drop-shadow-sm">{game.away_flag}</div>
+          <div className="text-center flex-1 flex flex-col items-center">
+            <Flag team={game.away_team} fallback={game.away_flag} className="w-[48px] h-[32px] text-4xl mb-2 drop-shadow-sm" />
             <div className="text-xs text-ocean font-bold">{game.away_team}</div>
           </div>
         </div>
@@ -116,6 +135,37 @@ export default function PredictionModal({ game, existing, onClose, onSaved }) {
             {winner}
           </div>
         )}
+
+        {/* Goal Scorers */}
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 mb-6 space-y-3 max-h-48 overflow-y-auto">
+          <div className="text-xs font-bold text-ocean flex items-center gap-1.5 mb-2 border-b border-gray-200 pb-2">
+            ⚽ Autores dos Gols (Opcional, +2 pts cada)
+          </div>
+          <p className="text-xs text-gray-500 mb-2">Selecione quem você acha que fará gol (pode selecionar vários):</p>
+          <div className="flex flex-col gap-2">
+            {[...players.home, ...players.away].map(p => {
+              const isSelected = predictedScorers.includes(p.id)
+              return (
+                <label key={p.id} className={`flex items-center gap-2 text-sm p-2 rounded border cursor-pointer transition-colors ${isSelected ? 'bg-gold/10 border-gold/40 text-ocean' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                  <input
+                    type="checkbox"
+                    className="hidden"
+                    checked={isSelected}
+                    onChange={() => {
+                      if (isSelected) setPredictedScorers(predictedScorers.filter(id => id !== p.id))
+                      else setPredictedScorers([...predictedScorers, p.id])
+                    }}
+                  />
+                  <span className={`w-4 h-4 rounded border flex items-center justify-center ${isSelected ? 'bg-gold border-gold text-white' : 'border-gray-300'}`}>
+                    {isSelected && "✓"}
+                  </span>
+                  <span className="font-bold">{p.name}</span>
+                  <span className="text-xs text-gray-400 ml-auto">{p.team}</span>
+                </label>
+              )
+            })}
+          </div>
+        </div>
 
         {/* Scoring guide */}
         <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 mb-6 space-y-2 text-xs text-gray-500 font-medium">

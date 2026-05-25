@@ -9,6 +9,8 @@ const navItems = [
   { to: '/palpites', label: 'Palpites', icon: Target },
   { to: '/chaveamento', label: 'Chaveamento', icon: Map },
   { to: '/ranking', label: 'Ranking', icon: Trophy },
+  { to: '/jogadores', label: 'Jogadores', icon: User },
+  { to: '/artilheiros', label: 'Artilheiros', icon: Trophy },
   { to: '/perfil', label: 'Perfil', icon: User },
 ]
 
@@ -26,7 +28,7 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col font-mona bg-background-gray">
       {/* Header Flutuante Premium */}
       <div className="sticky top-0 z-50 pt-7 px-3 pointer-events-none">
-        <div className="max-w-6xl mx-auto flex items-end justify-between xl:gap-14 gap-8">
+        <div className="max-w-[1200px] mx-auto flex items-center justify-between xl:gap-8 gap-4">
           
           {/* Logo Centralizado à Esquerda */}
           <div className="relative z-50 pointer-events-auto">
@@ -40,14 +42,14 @@ export default function Layout() {
 
           {/* Navegação Principal (Pílula) */}
           <nav className="bg-[#ffffffc4] backdrop-blur-md xl:border border-white rounded-full shadow-[0_0_35px_rgba(0,0,0,0.07)] lg:px-2 py-1 pointer-events-auto hidden lg:block">
-            <ul className="flex items-center text-md xl:text-lg font-bold text-ocean gap-2">
+            <ul className="flex items-center text-sm xl:text-base font-bold text-ocean gap-1 xl:gap-2">
               {navItems.map(({ to, label, exact }) => (
                 <li key={to} className="relative">
                   <NavLink
                     to={to}
                     end={exact}
                     className={({ isActive }) =>
-                      `relative block px-7 py-2 rounded-full isolate overflow-hidden group transition-all duration-300 ${
+                      `relative block px-4 xl:px-5 py-2 rounded-full isolate overflow-hidden group transition-all duration-300 ${
                         isActive ? 'text-white bg-ocean' : 'text-ocean hover:bg-ocean/10'
                       }`
                     }
@@ -61,7 +63,7 @@ export default function Layout() {
                   <NavLink
                     to="/admin"
                     className={({ isActive }) =>
-                      `relative block px-7 py-2 rounded-full isolate overflow-hidden group transition-all duration-300 ${
+                      `relative block px-4 xl:px-5 py-2 rounded-full isolate overflow-hidden group transition-all duration-300 ${
                         isActive ? 'text-white bg-ruby' : 'text-ruby hover:bg-ruby/10'
                       }`
                     }

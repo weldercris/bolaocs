@@ -183,12 +183,12 @@ alter table profiles enable row level security;
 alter table games enable row level security;
 alter table predictions enable row level security;
 
--- Profiles: todos podem ver, só o próprio usuário ou admin pode editar
-create policy "Profiles são públicos" on profiles for select using (true);
+-- Profiles: todos podem ver (mas apenas logados), só o próprio usuário ou admin pode editar
+create policy "Profiles são públicos" on profiles for select using (auth.role() = 'authenticated');
 create policy "Usuário edita próprio perfil" on profiles for update using (auth.uid() = id);
 
--- Games: todos podem ver, só admin pode criar/editar
-create policy "Jogos são públicos" on games for select using (true);
+-- Games: todos podem ver (mas apenas logados), só admin pode criar/editar
+create policy "Jogos são públicos" on games for select using (auth.role() = 'authenticated');
 create policy "Admin cria jogos" on games for insert
   with check (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
 create policy "Admin edita jogos" on games for update

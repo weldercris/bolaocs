@@ -1,8 +1,9 @@
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { MapPin, Clock, Lock } from 'lucide-react'
+import { MapPin, Clock, Lock, Heart } from 'lucide-react'
+import Flag from '@/components/ui/Flag'
 
-export default function GameCard({ game, prediction, onPredict, showPrediction = true }) {
+export default function GameCard({ game, prediction, onPredict, showPrediction = true, isFavorite, onToggleFavorite }) {
   const matchDate = new Date(game.match_date)
   const isPast = matchDate < new Date()
   const isFinished = game.status === 'finished' || (game.home_score !== null && game.away_score !== null)
@@ -19,6 +20,11 @@ export default function GameCard({ game, prediction, onPredict, showPrediction =
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+          {onToggleFavorite && (
+            <button onClick={onToggleFavorite} className="text-gray-300 hover:text-ruby transition-colors mr-1">
+              <Heart size={16} fill={isFavorite ? "currentColor" : "none"} className={isFavorite ? "text-ruby" : ""} />
+            </button>
+          )}
           <span className="font-bold text-ruby uppercase tracking-wider">{game.round}</span>
           {game.group_name && <span>· Grupo {game.group_name}</span>}
         </div>
@@ -29,7 +35,7 @@ export default function GameCard({ game, prediction, onPredict, showPrediction =
       <div className="flex items-center gap-4">
         {/* Home */}
         <div className="flex-1 flex flex-col items-center gap-3">
-          <span className="text-5xl drop-shadow-md">{game.home_flag}</span>
+          <Flag team={game.home_team} fallback={game.home_flag} className="w-[52px] h-[35px] text-5xl drop-shadow-md" />
           <span className="text-sm font-bold text-ocean text-center leading-tight">{game.home_team}</span>
         </div>
 
@@ -52,7 +58,7 @@ export default function GameCard({ game, prediction, onPredict, showPrediction =
 
         {/* Away */}
         <div className="flex-1 flex flex-col items-center gap-3">
-          <span className="text-5xl drop-shadow-md">{game.away_flag}</span>
+          <Flag team={game.away_team} fallback={game.away_flag} className="w-[52px] h-[35px] text-5xl drop-shadow-md" />
           <span className="text-sm font-bold text-ocean text-center leading-tight">{game.away_team}</span>
         </div>
       </div>
@@ -78,14 +84,6 @@ export default function GameCard({ game, prediction, onPredict, showPrediction =
               </div>
               {isFinished && (
                 <PointsBadge points={prediction.points} />
-              )}
-              {!isLocked && (
-                <button
-                  onClick={() => onPredict(game)}
-                  className="text-sm font-bold text-ocean hover:text-ruby transition-colors"
-                >
-                  Editar
-                </button>
               )}
             </div>
           ) : isLocked ? (
