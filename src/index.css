@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    @apply bg-background-gray text-ocean font-body min-h-screen antialiased selection:bg-ocean/20 selection:text-ocean;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-wide;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-background-gray;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ocean/30 rounded-full hover:bg-ocean/50;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-[#f5f5f5e5] backdrop-blur-sm border border-white shadow-[0_0_35px_rgba(0,0,0,0.05)] rounded-2xl;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-300 hover:brightness-95;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white shadow-[0_0_35px_rgba(0,0,0,0.08)] rounded-3xl;
+  }
+
+  .btn-primary {
+    @apply bg-ocean hover:brightness-125 text-white font-semibold px-6 py-3 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 shadow-md;
+  }
+
+  .btn-gold {
+    @apply bg-gold hover:brightness-110 text-white font-semibold px-6 py-3 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 shadow-md;
+  }
+
+  .btn-ruby {
+    @apply bg-ruby hover:brightness-110 text-white font-semibold px-6 py-3 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 shadow-md;
+  }
+
+  .btn-ghost {
+    @apply border border-ocean/20 text-ocean hover:bg-ocean/5 font-medium px-6 py-3 rounded-full transition-all duration-300;
+  }
+
+  .input-field {
+    @apply w-full bg-white border border-ocean/10 focus:border-ocean focus:ring-2 focus:ring-ocean/10 text-ocean placeholder-gray-400 rounded-xl px-4 py-3 outline-none transition-all duration-200 shadow-sm;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-ocean/10 text-ocean;
+  }
+
+  .section-title {
+    @apply font-display text-3xl md:text-4xl text-ocean mb-6 tracking-wider;
+  }
+
+  .score-input {
+    @apply w-14 h-14 text-2xl font-display text-center bg-white border-2 border-ocean/10 focus:border-ocean text-ocean rounded-xl outline-none transition-all duration-200 shadow-sm;
+  }
+}
+
+/* Animações de entrada */
+.animate-in {
+  animation: slideUp 0.4s ease-out both;
+}
+
+.animate-in:nth-child(1) { animation-delay: 0ms; }
+.animate-in:nth-child(2) { animation-delay: 60ms; }
+.animate-in:nth-child(3) { animation-delay: 120ms; }
+.animate-in:nth-child(4) { animation-delay: 180ms; }
+.animate-in:nth-child(5) { animation-delay: 240ms; }
+.animate-in:nth-child(6) { animation-delay: 300ms; }
+
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
