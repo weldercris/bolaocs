@@ -27,6 +27,15 @@ export default function RegisterPage() {
     e.preventDefault()
     if (form.password.length < 6) { setError('Senha precisa ter pelo menos 6 caracteres'); return }
     if (form.username.length < 3) { setError('Nome de usuário precisa ter pelo menos 3 caracteres'); return }
+
+    // Validação de domínio: apenas @suri.ai e @chatbotmaker.io
+    const allowedDomains = ['suri.ai', 'chatbotmaker.io']
+    const emailDomain = form.email.split('@')[1]?.toLowerCase()
+    if (!allowedDomains.includes(emailDomain)) {
+      setError('Acesso restrito. Apenas e-mails @suri.ai e @chatbotmaker.io podem se cadastrar.')
+      return
+    }
+
     setLoading(true)
     setError('')
 

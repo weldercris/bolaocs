@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useDemo, DEMO_RANKING } from '../contexts/DemoContext'
 
 const MEDAL = ['🥇', '🥈', '🥉']
 const POSITION_COLORS = {
@@ -11,12 +12,18 @@ const POSITION_COLORS = {
 
 export default function RankingPage() {
   const { profile } = useAuth()
+  const { isDemo } = useDemo()
   const [ranking, setRanking] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (isDemo) {
+      setRanking(DEMO_RANKING)
+      setLoading(false)
+      return
+    }
     fetchRanking()
-  }, [])
+  }, [isDemo])
 
   async function fetchRanking() {
     setLoading(true)
@@ -128,7 +135,7 @@ export default function RankingPage() {
                 {/* Nome + Estatísticas */}
                 <div className="flex-1 py-4 pr-2">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-base md:text-lg text-ocean font-bold leading-tight">{player.username}</h3>
+                    <h3 className="text-base md:text-lg text-ocean font-bold leading-tight">{player.full_name || player.username}</h3>
                     {isMe && <span className="badge text-[10px]">você</span>}
                   </div>
 

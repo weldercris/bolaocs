@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useDemo, DEMO_GAMES, DEMO_PREDICTIONS } from '../contexts/DemoContext'
 import GameCard from '../components/ui/GameCard'
 import PredictionModal from '../components/ui/PredictionModal'
 
 export default function PredictionsPage() {
   const { user } = useAuth()
+  const { isDemo } = useDemo()
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('todos')
@@ -13,8 +15,16 @@ export default function PredictionsPage() {
   const [modalPred, setModalPred] = useState(null)
 
   useEffect(() => {
+    if (isDemo) {
+      const predsMap = {}
+      for (const p of DEMO_PREDICTIONS) predsMap[p.game_id] = p
+      const merged = DEMO_GAMES.map(g => ({ game: g, prediction: predsMap[g.id] || null }))
+      setData(merged)
+      setLoading(false)
+      return
+    }
     fetchData()
-  }, [])
+  }, [isDemo])
 
   async function fetchData() {
     setLoading(true)
@@ -43,6 +53,7 @@ export default function PredictionsPage() {
   const totalPts = data.reduce((acc, d) => acc + (d.prediction?.points || 0), 0)
 
   function openPredict(game) {
+    if (isDemo) return // Leitura apenas no modo demo
     const pred = data.find(d => d.game.id === game.id)?.prediction
     setModalGame(game)
     setModalPred(pred || null)

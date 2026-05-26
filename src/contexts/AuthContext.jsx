@@ -1,15 +1,25 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useDemo, DEMO_PROFILE } from './DemoContext'
 
 const AuthContext = createContext({})
 
 export function AuthProvider({ children }) {
+  const { isDemo } = useDemo()
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Sessão inicial
+    // Quando entra/sai do modo demo, sincroniza o estado
+    if (isDemo) {
+      setUser({ id: DEMO_PROFILE.id })
+      setProfile(DEMO_PROFILE)
+      setLoading(false)
+      return
+    }
+
+    // Sessão real (não-demo)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       if (session?.user) fetchProfile(session.user.id)
@@ -27,7 +37,7 @@ export function AuthProvider({ children }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [isDemo])
 
   async function fetchProfile(userId) {
     const { data } = await supabase
@@ -73,8 +83,16 @@ export function AuthProvider({ children }) {
   }
 
   async function signIn({ email, password }) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return { error }
+    const result = await supabase.auth.signInWithPassword({ email, password })
+    if (result.error) return { error: result.error }
+
+    // Directly set user/profile so PrivateRoute sees them immediately
+    const sessionUser = result.data?.session?.user
+    if (sessionUser) {
+      setUser(sessionUser)
+      await fetchProfile(sessionUser.id)
+    }
+    return { error: null }
   }
 
   async function signOut() {
@@ -98,3 +116,4 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext)
+

@@ -1,7 +1,9 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useDemo } from '../../contexts/DemoContext'
 import { Home, Calendar, Target, Trophy, User, Shield, LogOut, Menu, X, Map } from 'lucide-react'
 import { useState } from 'react'
+import DemoBanner from '../ui/DemoBanner'
 
 const navItems = [
   { to: '/', label: 'Início', icon: Home, exact: true },
@@ -14,18 +16,25 @@ const navItems = [
 
 export default function Layout() {
   const { profile, signOut } = useAuth()
+  const { isDemo, exitDemo } = useDemo()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   async function handleSignOut() {
-    await signOut()
+    if (isDemo) {
+      exitDemo()
+    } else {
+      await signOut()
+    }
     navigate('/login')
   }
 
   return (
     <div className="min-h-screen flex flex-col font-mona bg-background-gray">
+      {/* ── Demo Banner (topo absoluto) ── */}
+      <DemoBanner />
       {/* ── Header Flutuante Desktop ── */}
-      <div className="sticky top-0 z-50 pt-7 px-3 pointer-events-none">
+      <div className="sticky top-0 z-50 pt-4 pb-2 px-3 pointer-events-none">
         <div className="max-w-[1200px] mx-auto flex items-center justify-between xl:gap-8 gap-4">
           
           {/* Logo */}
@@ -80,7 +89,7 @@ export default function Layout() {
               ) : (
                 <span className="text-xl bg-background-gray rounded-full p-1 border border-ocean/10">⚽</span>
               )}
-              <span className="text-ocean font-bold">{profile?.username}</span>
+              <span className="text-ocean font-bold">{profile?.full_name || profile?.username}</span>
             </div>
             <button onClick={handleSignOut} className="ml-2 p-2 rounded-full text-gray-400 hover:text-white hover:bg-ruby transition-all">
               <LogOut size={16} />
@@ -124,7 +133,7 @@ export default function Layout() {
                     <div className="w-12 h-12 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-2xl">⚽</div>
                   )}
                   <div>
-                    <div className="font-bold text-white text-base leading-tight capitalize">{profile?.username}</div>
+                    <div className="font-bold text-white text-base leading-tight capitalize">{profile?.full_name || profile?.username}</div>
                     <div className="text-white/50 text-xs">Bolão Copa 2026</div>
                   </div>
                 </div>
@@ -213,7 +222,7 @@ export default function Layout() {
       </div>
 
       {/* Content Area */}
-      <main className="flex-1 z-10 w-full pt-2 lg:pt-6 pb-24 lg:pb-0">
+      <main className="flex-1 z-10 w-full pt-2 lg:pt-3 pb-24 lg:pb-0">
         <Outlet />
       </main>
 
@@ -229,13 +238,14 @@ export default function Layout() {
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-2">
               
-              <p className="text-gray-400 text-sm font-medium">⚽ Criado para amigos · Copa do Mundo 2026</p>
+              <p className="text-gray-400 text-sm font-medium">⚽ Bolão CS - Copa do Mundo 2026</p>
             </div>
             <p className="text-gray-300 text-xs">EUA · Canadá · México · 11 Jun – 19 Jul 2026</p>
+            <p className="text-gray-400 text-xs">Feito por Weldercris Ribeiro </p>
           </div>
 
           {/* Direita */}
-          <img src="/trophy.png" alt="Troféu" className="w-12 h-12 object-contain opacity-30 float" />
+          <img src="/cbf.svg" alt="Troféu" className="w-12 h-12 object-contain opacity-30 float" />
         </div>
       </footer>
     </div>

@@ -82,7 +82,7 @@ export default function ProfilePage() {
           />
           <p className="text-xs text-gray-400 mb-2">Toque para alterar a foto</p>
 
-          <div className="font-display text-2xl text-ocean">{profile?.username}</div>
+          <div className="font-display text-2xl text-ocean">{profile?.full_name || profile?.username}</div>
           <div className="text-sm text-gray-500">{profile?.is_admin && <span className="badge bg-gold/20 text-gold border border-gold/40">Admin</span>}</div>
         </div>
 

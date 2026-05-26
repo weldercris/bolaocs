@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useDemo, DEMO_STATS, DEMO_GAMES, DEMO_RANKING, DEMO_CHAMPION } from '../contexts/DemoContext'
 import { supabase } from '../lib/supabase'
-import { Trophy, Target, Calendar, ChevronRight } from 'lucide-react'
+import { Trophy, Target, Calendar, ChevronRight, Crown, Star } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Countdown } from '../components/ui/Countdown'
@@ -10,30 +11,73 @@ import Flag from '../components/ui/Flag'
 
 export default function HomePage() {
   const { profile } = useAuth()
+  const { isDemo } = useDemo()
   const [stats, setStats] = useState({ total_points: 0, total_predictions: 0, exact_scores: 0, position: '-' })
   const [nextGames, setNextGames] = useState([])
+  const [recentGames, setRecentGames] = useState([])
   const [topRanking, setTopRanking] = useState([])
   const [loading, setLoading] = useState(true)
+  const [champion, setChampion] = useState(null)
 
   useEffect(() => {
+    if (isDemo) {
+      // Dados fictícios — nenhuma query ao Supabase
+      setStats(DEMO_STATS)
+      // No demo a copa já acabou, não há próximos jogos
+      const now = new Date()
+      const futureGames = DEMO_GAMES.filter(g => new Date(g.match_date) > now)
+      setNextGames(futureGames.slice(0, 3))
+      // Jogos recentes (últimos finalizados)
+      const pastGames = DEMO_GAMES.filter(g => g.home_score !== null).sort((a, b) => new Date(b.match_date) - new Date(a.match_date))
+      setRecentGames(pastGames.slice(0, 3))
+      setTopRanking(DEMO_RANKING.slice(0, 3))
+      setChampion(DEMO_CHAMPION)
+      setLoading(false)
+      return
+    }
     fetchData()
-  }, [profile])
+  }, [profile, isDemo])
 
   async function fetchData() {
     if (!profile) return
     setLoading(true)
 
-    const [rankData, gamesData, predData] = await Promise.all([
+    const [rankData, gamesData, predData, finalData] = await Promise.all([
       supabase.from('ranking').select('*').order('position').limit(3),
-      supabase.from('games').select('*').gte('match_date', new Date().toISOString()).order('match_date').limit(3),
+      supabase.from('games').select('*').order('match_date'),
       supabase.from('ranking').select('*').eq('id', profile.id).single(),
+      supabase.from('games').select('*').eq('round', 'Final').limit(1).single(),
     ])
 
     setTopRanking(rankData.data || [])
-    setNextGames(gamesData.data || [])
+
+    const allGames = gamesData.data || []
+    const now = new Date()
+    const futureGames = allGames.filter(g => new Date(g.match_date) > now)
+    setNextGames(futureGames.slice(0, 3))
+
+    // Jogos recentes
+    const pastGames = allGames.filter(g => g.home_score !== null).sort((a, b) => new Date(b.match_date) - new Date(a.match_date))
+    setRecentGames(pastGames.slice(0, 3))
+
     if (predData.data) setStats(predData.data)
+
+    // Check if there's a champion (final game with scores)
+    if (finalData.data && finalData.data.home_score !== null && finalData.data.away_score !== null) {
+      const final = finalData.data
+      const isHomeWinner = final.home_score > final.away_score
+      setChampion({
+        team: isHomeWinner ? final.home_team : final.away_team,
+        flag: isHomeWinner ? (final.home_flag || '🏆') : (final.away_flag || '🏆'),
+        finalScore: `${final.home_score} × ${final.away_score}`,
+        opponent: isHomeWinner ? final.away_team : final.home_team,
+        opponentFlag: isHomeWinner ? (final.away_flag || '🏳️') : (final.home_flag || '🏳️'),
+      })
+    }
+
     setLoading(false)
   }
+
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
@@ -41,7 +85,75 @@ export default function HomePage() {
   return (
     <div className="max-w-6xl mx-auto px-4 pt-4 lg:pt-32 pb-8 space-y-8">
       {/* Countdown Cup 2026 */}
-      <Countdown targetDate="2026-06-11T00:00:00Z" />
+      <Countdown targetDate="2026-06-11T00:00:00Z" champion={champion} />
+
+      {/* ══════════ CHAMPION BANNER ══════════ */}
+      {champion && (
+        <div className="relative overflow-hidden rounded-[2.5rem] shadow-premium border-2 border-[#ffdf00]/30 mb-8">
+          {/* Background layers */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#009c3b] via-[#006b28] to-[#004d1a]" />
+          <div className="absolute inset-0 bg-[url('/stadium.jpg')] bg-cover bg-center opacity-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#009c3b]/90 via-transparent to-[#ffdf00]/20" />
+
+          {/* Golden particles */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {[...Array(15)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: `${Math.random() * 6 + 2}px`,
+                  height: `${Math.random() * 6 + 2}px`,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  background: 'rgba(255,223,0,0.6)',
+                  animation: `float ${4 + Math.random() * 8}s ${Math.random() * 3}s ease-in-out infinite`,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 px-8 md:px-12 py-10">
+            {/* Trophy + Flag */}
+            <div className="flex items-center gap-6 flex-shrink-0">
+              <div className="relative">
+                <div className="absolute inset-0 bg-[#ffdf00]/30 rounded-full blur-[30px] scale-150" />
+                <img src="/TROFEU.png" alt="Troféu" className="w-28 md:w-36 object-contain relative z-10 drop-shadow-[0_10px_30px_rgba(255,223,0,0.5)] float" />
+              </div>
+              <Flag team={champion.team} fallback={champion.flag} className="w-20 h-14 md:w-24 md:h-16 drop-shadow-xl" />
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                <Crown size={20} className="text-[#ffdf00]" />
+                <span className="text-[#ffdf00] text-xs font-bold uppercase tracking-[0.3em]">Campeão do Mundo 2026</span>
+              </div>
+              <h2 className="font-display text-white text-5xl md:text-6xl lg:text-7xl tracking-wider mb-3 drop-shadow-lg" style={{ textShadow: '0 0 40px rgba(255,223,0,0.3)' }}>
+                {champion.team.toUpperCase()}
+              </h2>
+              <div className="flex items-center justify-center md:justify-start gap-4">
+                <div className="bg-white/15 backdrop-blur-sm rounded-xl px-5 py-2 border border-white/20">
+                  <span className="text-white/60 text-xs font-medium block">Final</span>
+                  <span className="text-white font-display text-2xl">{champion.finalScore}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white/60 text-sm font-medium">vs</span>
+                  <Flag team={champion.opponent} fallback={champion.opponentFlag} className="w-8 h-6" />
+                  <span className="text-white/80 font-bold">{champion.opponent}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Stars decoration */}
+            <div className="hidden lg:flex flex-col items-center gap-2">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={24} className="text-[#ffdf00] fill-[#ffdf00] drop-shadow-lg" style={{ animation: `float ${2 + i * 0.5}s ease-in-out infinite`, opacity: 1 - i * 0.12 }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Banner Premium */}
       <div className="relative overflow-hidden rounded-[2.5rem] h-[30rem] md:h-[36rem] flex items-center shadow-premium border border-gray-100 mb-16">
@@ -64,16 +176,19 @@ export default function HomePage() {
               <span className="text-5xl bg-white rounded-full p-2 border border-gray-100 shadow-sm">⚽</span>
             )}
             <h1 className="text-ocean text-4xl md:text-5xl lg:text-6xl font-black font-display leading-[1.1]">
-              {profile?.username?.toUpperCase()}
+              {(profile?.full_name || profile?.username || '').toUpperCase()}
             </h1>
           </div>
           <p className="text-gray-500 text-lg mb-8 max-w-md leading-relaxed">
-            O palco é seu! Faça seus palpites para os próximos jogos e mostre quem manda no ranking da Copa 2026.
+            {champion
+              ? 'A Copa acabou! Confira seu desempenho final no ranking e reviva os melhores momentos.'
+              : 'O palco é seu! Faça seus palpites para os próximos jogos e mostre quem manda no ranking da Copa 2026.'
+            }
           </p>
 
           <div className="flex flex-wrap gap-4">
             <Link to="/palpites" className="btn-gold px-8 py-4 text-lg shadow-lg">
-              <Target size={20} /> Fazer Palpites
+              <Target size={20} /> {champion ? 'Ver Palpites' : 'Fazer Palpites'}
             </Link>
             <Link to="/ranking" className="btn-ghost px-8 py-4 text-lg bg-white/80 backdrop-blur-md">
               <Trophy size={20} /> Ver Ranking
@@ -112,24 +227,30 @@ export default function HomePage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8 mt-12">
-        {/* Next Games */}
+        {/* Next Games or Recent Games */}
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="section-title !mb-0 text-left">Próximos Jogos</h2>
+            <h2 className="section-title !mb-0 text-left">{nextGames.length > 0 ? 'Próximos Jogos' : 'Últimos Resultados'}</h2>
             <Link to="/jogos" className="text-sm font-bold text-ocean hover:text-ruby flex items-center gap-1 transition-colors">
               Ver todos <ChevronRight size={16} />
             </Link>
           </div>
           <div className="space-y-4">
-            {nextGames.length === 0 && !loading && (
+            {nextGames.length === 0 && recentGames.length === 0 && !loading && (
               <div className="card p-8 text-center text-gray-500 font-medium">Nenhum jogo agendado</div>
             )}
-            {nextGames.map(game => (
+            {(nextGames.length > 0 ? nextGames : recentGames).map(game => (
               <div key={game.id} className="card-hover p-5 flex items-center gap-4 animate-in">
                 <div className="flex items-center gap-4 flex-1">
                   <Flag team={game.home_team} fallback={game.home_flag} className="w-[48px] h-[32px] text-4xl drop-shadow-md" />
                   <div className="text-sm text-gray-400 text-center font-display flex-1">
-                    <span className="bg-background-gray px-3 py-1 rounded-full text-xs font-bold border border-gray-200">VS</span>
+                    {game.home_score !== null ? (
+                      <span className="bg-ocean/10 px-4 py-1.5 rounded-full text-base font-bold text-ocean border border-ocean/20">
+                        {game.home_score} × {game.away_score}
+                      </span>
+                    ) : (
+                      <span className="bg-background-gray px-3 py-1 rounded-full text-xs font-bold border border-gray-200">VS</span>
+                    )}
                   </div>
                   <Flag team={game.away_team} fallback={game.away_flag} className="w-[48px] h-[32px] text-4xl drop-shadow-md" />
                   <div className="ml-4 flex-1 text-right">
@@ -138,6 +259,11 @@ export default function HomePage() {
                       <Calendar size={12} />
                       {format(new Date(game.match_date), "dd/MM · HH'h'mm", { locale: ptBR })}
                     </div>
+                    {game.round === 'Final' && game.home_score !== null && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#ffdf00] bg-[#009c3b] px-2 py-0.5 rounded-full mt-1">
+                        <Crown size={10} /> FINAL
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -171,7 +297,7 @@ export default function HomePage() {
                       <span className="text-3xl bg-background-gray rounded-full p-2 border border-gray-100">⚽</span>
                     )}
                     <div className="flex-1">
-                      <div className="font-bold text-ocean text-lg">{player.username}</div>
+                      <div className="font-bold text-ocean text-lg">{player.full_name || player.username}</div>
                       <div className="text-xs text-gray-500 font-medium">{player.total_predictions} palpites</div>
                     </div>
                     <div className="text-right bg-ocean/5 px-4 py-2 rounded-xl">

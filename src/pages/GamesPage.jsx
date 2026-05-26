@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useDemo, DEMO_GAMES, DEMO_PREDICTIONS } from '../contexts/DemoContext'
 import GameCard from '../components/ui/GameCard'
 import PredictionModal from '../components/ui/PredictionModal'
 import { Calendar } from 'lucide-react'
@@ -9,6 +10,7 @@ const ROUNDS = ['Todos', 'Fase de Grupos', 'Oitavas', 'Quartas', 'Semi', 'Final'
 
 export default function GamesPage() {
   const { user } = useAuth()
+  const { isDemo } = useDemo()
   const [games, setGames] = useState([])
   const [predictions, setPredictions] = useState({})
   const [favorites, setFavorites] = useState([])
@@ -17,8 +19,16 @@ export default function GamesPage() {
   const [modalGame, setModalGame] = useState(null)
 
   useEffect(() => {
+    if (isDemo) {
+      setGames(DEMO_GAMES)
+      const predsMap = {}
+      for (const p of DEMO_PREDICTIONS) predsMap[p.game_id] = p
+      setPredictions(predsMap)
+      setLoading(false)
+      return
+    }
     fetchData()
-  }, [])
+  }, [isDemo])
 
   async function fetchData() {
     setLoading(true)
@@ -36,6 +46,13 @@ export default function GamesPage() {
   }
 
   async function toggleFavorite(gameId) {
+    if (isDemo) {
+      // No demo, apenas alterna localmente sem persistir
+      setFavorites(prev =>
+        prev.includes(gameId) ? prev.filter(id => id !== gameId) : [...prev, gameId]
+      )
+      return
+    }
     const isFav = favorites.includes(gameId)
     if (isFav) {
       await supabase.from('favorites').delete().eq('user_id', user.id).eq('item_type', 'game').eq('item_id', gameId)
