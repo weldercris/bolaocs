@@ -662,10 +662,13 @@ export default function LoginPage() {
             </div>
 
             {/* ── Brand accent below card ── */}
-            <div className={`flex items-center justify-center gap-3 mt-4 transition-all duration-1000 delay-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <img src="/cbf.svg" alt="" className="w-5 h-5 object-contain opacity-20" />
-              <span className="text-white/15 text-[11px] font-medium tracking-wider">EUA · Canadá · México · 2026</span>
-              <img src="/trophy.png" alt="" className="w-5 h-5 object-contain opacity-20" />
+            <div className={`flex flex-col items-center justify-center gap-1 mt-4 transition-all duration-1000 delay-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              <div className="flex items-center justify-center gap-3">
+                <img src="/cbf.svg" alt="" className="w-5 h-5 object-contain opacity-20" />
+                <span className="text-white/15 text-[11px] font-medium tracking-wider">EUA · Canadá · México · 2026</span>
+                <img src="/trophy.png" alt="" className="w-5 h-5 object-contain opacity-20" />
+              </div>
+              <span className="text-white/15 text-[10px] font-medium tracking-wider mt-1">Feito por Weldercris Ribeiro</span>
             </div>
           </div>
         </div>
